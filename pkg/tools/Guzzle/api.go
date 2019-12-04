@@ -73,9 +73,6 @@ type Config struct {
 	// Scheme is the URI scheme for the Guzzle server
 	Scheme string
 
-	// Datacenter to use. If not provided, the default agent datacenter is used.
-	Datacenter string
-
 	// Transport is the Transport to use for the http client.
 	Transport *http.Transport
 
@@ -162,10 +159,6 @@ type QueryOptions struct {
 	// Namespace overrides the `default` namespace
 	// Note: Namespaces are available only in Consul Enterprise
 	Namespace string
-
-	// Providing a datacenter overwrites the DC provided
-	// by the Config
-	Datacenter string
 
 	// AllowStale allows any Consul server (non-leader) to service
 	// a read. This allows for lower latency and higher throughput

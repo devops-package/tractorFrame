@@ -133,9 +133,6 @@ func (r *request) setQueryOptions(q *QueryOptions) {
 	if q.Namespace != "" {
 		r.params.Set("ns", q.Namespace)
 	}
-	if q.Datacenter != "" {
-		r.params.Set("dc", q.Datacenter)
-	}
 	if q.AllowStale {
 		r.params.Set("stale", "")
 	}
