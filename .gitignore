@@ -64,16 +64,16 @@ crashlytics-build.properties
 fabric.properties
 
 # Editor-based Rest Client
-.idea/httpRequests
-
-# Android studio 3.1+ serialized cache file
-.idea/caches/build_file_checksums.ser
 
 ### Go template
 # Binaries for programs and plugins
 *.exe
 *.exe~
 *.dll
+.idea/httpRequests
+
+# Android studio 3.1+ serialized cache file
+.idea/caches/build_file_checksums.ser
 *.so
 *.dylib
 
@@ -86,3 +86,4 @@ fabric.properties
 # Dependency directories (remove the comment below to include it)
 vendor/
 
+example

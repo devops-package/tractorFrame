@@ -1,4 +1,4 @@
-module tractorFrame
+module github.com/tonyjia87/tractorFrame
 
 go 1.12
 

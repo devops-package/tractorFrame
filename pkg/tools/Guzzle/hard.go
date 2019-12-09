@@ -1,7 +1,6 @@
 package Guzzle
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -126,66 +125,14 @@ func NewHttpClient(transport *http.Transport, tlsConf TLSConfig) (*http.Client, 
 
 // setQueryOptions is used to annotate the request with
 // additional query options
-func (r *request) setQueryOptions(q *QueryOptions) {
-	if q == nil {
-		return
-	}
-	if q.Namespace != "" {
-		r.params.Set("ns", q.Namespace)
-	}
-	if q.AllowStale {
-		r.params.Set("stale", "")
-	}
-	if q.RequireConsistent {
-		r.params.Set("consistent", "")
-	}
-	if q.WaitIndex != 0 {
-		r.params.Set("index", strconv.FormatUint(q.WaitIndex, 10))
-	}
-	if q.WaitTime != 0 {
-		r.params.Set("wait", durToMsec(q.WaitTime))
-	}
-	if q.WaitHash != "" {
-		r.params.Set("hash", q.WaitHash)
-	}
-	if q.Token != "" {
-		r.header.Set("X-Consul-Token", q.Token)
-	}
-	if q.Near != "" {
-		r.params.Set("near", q.Near)
-	}
-	if q.Filter != "" {
-		r.params.Set("filter", q.Filter)
-	}
-	if len(q.NodeMeta) > 0 {
-		for key, value := range q.NodeMeta {
-			r.params.Add("node-meta", key+":"+value)
+func (r *request) SetParam(position, name, value string) {
+	if len(value) > 0 {
+		switch position {
+		case "Header":
+			r.header.Set(name, value)
+		case "Query":
+			r.params.Set(name, value)
 		}
 	}
-	if q.RelayFactor != 0 {
-		r.params.Set("relay-factor", strconv.Itoa(int(q.RelayFactor)))
-	}
-	if q.LocalOnly {
-		r.params.Set("local-only", fmt.Sprintf("%t", q.LocalOnly))
-	}
-	if q.Connect {
-		r.params.Set("connect", "true")
-	}
-	if q.UseCache && !q.RequireConsistent {
-		r.params.Set("cached", "")
-
-		cc := []string{}
-		if q.MaxAge > 0 {
-			cc = append(cc, fmt.Sprintf("max-age=%.0f", q.MaxAge.Seconds()))
-		}
-		if q.StaleIfError > 0 {
-			cc = append(cc, fmt.Sprintf("stale-if-error=%.0f", q.StaleIfError.Seconds()))
-		}
-		if len(cc) > 0 {
-			r.header.Set("Cache-Control", strings.Join(cc, ", "))
-		}
-	}
-
-	r.ctx = q.ctx
 }
 

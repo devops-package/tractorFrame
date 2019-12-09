@@ -1,8 +1,10 @@
 package Guzzle
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"github.com/hashicorp/go-cleanhttp"
 	"io"
 	"io/ioutil"
 	"net"
@@ -10,7 +12,6 @@ import (
 	"net/url"
 	"strings"
 	"time"
-	"github.com/hashicorp/go-cleanhttp"
 )
 
 const (
@@ -139,10 +140,6 @@ type TLSConfig struct {
 	InsecureSkipVerify bool
 }
 
-type Client struct {
-	config Config
-}
-
 // request is used to help build up a request
 type request struct {
 	config *Config
@@ -155,90 +152,9 @@ type request struct {
 	ctx    context.Context
 }
 
-type QueryOptions struct {
-	// Namespace overrides the `default` namespace
-	// Note: Namespaces are available only in Consul Enterprise
-	Namespace string
 
-	// AllowStale allows any Consul server (non-leader) to service
-	// a read. This allows for lower latency and higher throughput
-	AllowStale bool
-
-	// RequireConsistent forces the read to be fully consistent.
-	// This is more expensive but prevents ever performing a stale
-	// read.
-	RequireConsistent bool
-
-	// UseCache requests that the agent cache results locally. See
-	// https://www.consul.io/api/features/caching.html for more details on the
-	// semantics.
-	UseCache bool
-
-	// MaxAge limits how old a cached value will be returned if UseCache is true.
-	// If there is a cached response that is older than the MaxAge, it is treated
-	// as a cache miss and a new fetch invoked. If the fetch fails, the error is
-	// returned. Clients that wish to allow for stale results on error can set
-	// StaleIfError to a longer duration to change this behavior. It is ignored
-	// if the endpoint supports background refresh caching. See
-	// https://www.consul.io/api/features/caching.html for more details.
-	MaxAge time.Duration
-
-	// StaleIfError specifies how stale the client will accept a cached response
-	// if the servers are unavailable to fetch a fresh one. Only makes sense when
-	// UseCache is true and MaxAge is set to a lower, non-zero value. It is
-	// ignored if the endpoint supports background refresh caching. See
-	// https://www.consul.io/api/features/caching.html for more details.
-	StaleIfError time.Duration
-
-	// WaitIndex is used to enable a blocking query. Waits
-	// until the timeout or the next index is reached
-	WaitIndex uint64
-
-	// WaitHash is used by some endpoints instead of WaitIndex to perform blocking
-	// on state based on a hash of the response rather than a monotonic index.
-	// This is required when the state being blocked on is not stored in Raft, for
-	// example agent-local proxy configuration.
-	WaitHash string
-
-	// WaitTime is used to bound the duration of a wait.
-	// Defaults to that of the Config, but can be overridden.
-	WaitTime time.Duration
-
-	// Token is used to provide a per-request ACL token
-	// which overrides the agent's default token.
-	Token string
-
-	// Near is used to provide a node name that will sort the results
-	// in ascending order based on the estimated round trip time from
-	// that node. Setting this to "_agent" will use the agent's node
-	// for the sort.
-	Near string
-
-	// NodeMeta is used to filter results by nodes with the given
-	// metadata key/value pairs. Currently, only one key/value pair can
-	// be provided for filtering.
-	NodeMeta map[string]string
-
-	// RelayFactor is used in keyring operations to cause responses to be
-	// relayed back to the sender through N other random nodes. Must be
-	// a value from 0 to 5 (inclusive).
-	RelayFactor uint8
-
-	// LocalOnly is used in keyring list operation to force the keyring
-	// query to only hit local servers (no WAN traffic).
-	LocalOnly bool
-
-	// Connect filters prepared query execution to only include Connect-capable
-	// services. This currently affects prepared query execution.
-	Connect bool
-
-	// ctx is an optional context pass through to the underlying HTTP
-	// request layer. Use Context() and WithContext() to manage this.
-	ctx context.Context
-
-	// Filter requests filtering data prior to it being returned. The string
-	// is a go-bexpr compatible expression.
-	Filter string
+type Client struct {
+	config Config
 }
 
 // NewClient returns a new client
@@ -368,7 +284,7 @@ func (r *request) toHTTP() (*http.Request, error) {
 }
 
 // doRequest runs a request with our client
-func (c *Client) doRequest(r *request) (time.Duration, *http.Response, error) {
+func (c *Client) NewDoRequest(r *request) (time.Duration, *http.Response, error) {
 	req, err := r.toHTTP()
 	if err != nil {
 		return 0, nil, err
@@ -378,3 +294,70 @@ func (c *Client) doRequest(r *request) (time.Duration, *http.Response, error) {
 	diff := time.Since(start)
 	return diff, resp, err
 }
+
+// newRequest is used to create a new request
+func (c *Client) DoNewRequest(method, path string) *request {
+	r := &request{
+		config: &c.config,
+		method: method,
+		url: &url.URL{
+			Scheme: c.config.Scheme,
+			Host:   c.config.Address,
+			Path:   path,
+		},
+		params: make(map[string][]string),
+		header: make(http.Header),
+	}
+	if c.config.Namespace != "" {
+		r.params.Set("ns", c.config.Namespace)
+	}
+	if c.config.WaitTime != 0 {
+		r.params.Set("wait", durToMsec(r.config.WaitTime))
+	}
+	if c.config.Token != "" {
+		r.header.Set("X-Consul-Token", r.config.Token)
+	}
+	return r
+}
+
+// requireOK is used to wrap doRequest and check for a 200
+func RequireOK(d time.Duration, resp *http.Response, e error) (time.Duration, *http.Response, error) {
+	if e != nil {
+		if resp != nil {
+			resp.Body.Close()
+		}
+		return d, nil, e
+	}
+	if resp.StatusCode != 200 {
+		return d, nil, generateUnexpectedResponseCodeError(resp)
+	}
+	return d, resp, nil
+}
+
+// generateUnexpectedResponseCodeError consumes the rest of the body, closes
+// the body stream and generates an error indicating the status code was
+// unexpected.
+func generateUnexpectedResponseCodeError(resp *http.Response) error {
+	var buf bytes.Buffer
+	io.Copy(&buf, resp.Body)
+	resp.Body.Close()
+	return fmt.Errorf("Unexpected response code: %d (%s)", resp.StatusCode, buf.Bytes())
+}
+
+func requireNotFoundOrOK(d time.Duration, resp *http.Response, e error) (bool, time.Duration, *http.Response, error) {
+	if e != nil {
+		if resp != nil {
+			resp.Body.Close()
+		}
+		return false, d, nil, e
+	}
+	switch resp.StatusCode {
+	case 200:
+		return true, d, resp, nil
+	case 404:
+		return false, d, resp, nil
+	default:
+		return false, d, nil, generateUnexpectedResponseCodeError(resp)
+	}
+}
+

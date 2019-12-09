@@ -8,6 +8,7 @@ import (
 	"github.com/hashicorp/go-rootcerts"
 	"io"
 	"net"
+	"net/http"
 	"strings"
 	"time"
 )
@@ -72,4 +73,10 @@ func SetupTLSConfig(tlsConfig *TLSConfig) (*tls.Config, error) {
 	}
 
 	return tlsClientConfig, nil
+}
+
+// decodeBody is used to JSON decode a body
+func DecodeBody(resp *http.Response, out interface{}) error {
+	dec := json.NewDecoder(resp.Body)
+	return dec.Decode(out)
 }
