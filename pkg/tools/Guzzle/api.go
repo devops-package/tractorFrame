@@ -292,6 +292,8 @@ func (c *Client) NewDoRequest(r *request) (time.Duration, *http.Response, error)
 	start := time.Now()
 	resp, err := c.config.HttpClient.Do(req)
 	diff := time.Since(start)
+
+
 	return diff, resp, err
 }
 
@@ -322,10 +324,13 @@ func (c *Client) DoNewRequest(method, path string) *request {
 
 // requireOK is used to wrap doRequest and check for a 200
 func RequireOK(d time.Duration, resp *http.Response, e error) (time.Duration, *http.Response, error) {
+	defaultResp := &Response{}
 	if e != nil {
 		if resp != nil {
 			resp.Body.Close()
 		}
+		defaultResp.StatusCode = resp.StatusCode
+
 		return d, nil, e
 	}
 	if resp.StatusCode != 200 {
@@ -341,6 +346,7 @@ func generateUnexpectedResponseCodeError(resp *http.Response) error {
 	var buf bytes.Buffer
 	io.Copy(&buf, resp.Body)
 	resp.Body.Close()
+
 	return fmt.Errorf("Unexpected response code: %d (%s)", resp.StatusCode, buf.Bytes())
 }
 

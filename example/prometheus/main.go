@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"github.com/tonyjia87/tractorFrame/pkg/tools/Guzzle"
-	"time"
 )
 
 // Health can be used to query the Health endpoints
@@ -33,10 +32,8 @@ func main() {
 	client, _ := Guzzle.NewClient(profile)
 
 	pc := &Prometheus{client}
-	rtt, rsp , err := pc.Node()
-	fmt.Printf("%+v\n",rtt)
-	fmt.Printf("%+v\n",*rsp)
-	fmt.Printf("%+v\n",err)
+	pc.Node()
+
 
 
 }
@@ -60,18 +57,19 @@ type RspPrometheus struct {
 	} `json:"data"`
 }
 
-func (p *Prometheus) Node() (time.Duration, *RspPrometheus, error, ){
+func (p *Prometheus) Node() {
 	r := p.c.DoNewRequest("GET","/api/v1/query")
 	r.SetParam("Query","query","up{instance='172.17.121.128:9100',job='consul'}")
-	rtt, resp, err := Guzzle.RequireOK(p.c.NewDoRequest(r))
-	defer resp.Body.Close()
-	fmt.Println(rtt,resp, err)
-	out := &RspPrometheus{}
-	if err := Guzzle.DecodeBody(resp, &out); err != nil {
-		return rtt, nil, err
-	}
+	rtt, rsp , err := Guzzle.RequireOK(p.c.NewDoRequest(r))
+	if err != nil {
 
-	return rtt, out, nil
+	}
+	//out := &RspPrometheus{}
+	//if err := Guzzle.DecodeBody(rsp, &out); err != nil {
+	//	return rtt, nil, err
+	//}
+
+	fmt.Println(rtt, rsp, err)
 
 }
 
