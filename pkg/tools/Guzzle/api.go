@@ -152,7 +152,6 @@ type request struct {
 	ctx    context.Context
 }
 
-
 type Client struct {
 	config Config
 }
@@ -293,7 +292,6 @@ func (c *Client) NewDoRequest(r *request) (time.Duration, *http.Response, error)
 	resp, err := c.config.HttpClient.Do(req)
 	diff := time.Since(start)
 
-
 	return diff, resp, err
 }
 
@@ -323,20 +321,9 @@ func (c *Client) DoNewRequest(method, path string) *request {
 }
 
 // requireOK is used to wrap doRequest and check for a 200
-func RequireOK(d time.Duration, resp *http.Response, e error) (time.Duration, *http.Response, error) {
-	defaultResp := &Response{}
-	if e != nil {
-		if resp != nil {
-			resp.Body.Close()
-		}
-		defaultResp.StatusCode = resp.StatusCode
+func RequireOK(d time.Duration, resp *http.Response, e error) *Response {
 
-		return d, nil, e
-	}
-	if resp.StatusCode != 200 {
-		return d, nil, generateUnexpectedResponseCodeError(resp)
-	}
-	return d, resp, nil
+	return buildResponse(d, resp, e)
 }
 
 // generateUnexpectedResponseCodeError consumes the rest of the body, closes
@@ -346,8 +333,25 @@ func generateUnexpectedResponseCodeError(resp *http.Response) error {
 	var buf bytes.Buffer
 	io.Copy(&buf, resp.Body)
 	resp.Body.Close()
-
 	return fmt.Errorf("Unexpected response code: %d (%s)", resp.StatusCode, buf.Bytes())
+}
+
+func (resp *Response) Close() {
+	resp.RawResponse.Body.Close()
+}
+
+func buildResponse(d time.Duration, resp *http.Response, e error) *Response {
+
+	defaultResp := &Response{}
+
+
+	defaultResp.StatusCode = resp.StatusCode
+	defaultResp.RawResponse = resp
+	defaultResp.Header = resp.Header
+	defaultResp.Cookies = resp.Cookies()
+	defaultResp.Duration = d
+	defaultResp.Err = e
+	return defaultResp
 }
 
 func requireNotFoundOrOK(d time.Duration, resp *http.Response, e error) (bool, time.Duration, *http.Response, error) {
@@ -366,4 +370,3 @@ func requireNotFoundOrOK(d time.Duration, resp *http.Response, e error) (bool, t
 		return false, d, nil, generateUnexpectedResponseCodeError(resp)
 	}
 }
-

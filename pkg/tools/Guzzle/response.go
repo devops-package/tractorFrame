@@ -22,10 +22,21 @@ type Response struct {
 	// Expose the native Go http.Response object for convenience.
 	RawResponse *http.Response
 
-	// Expose the native Go http.Request object for convenience.
-	RawRequest *http.Request
 
 	// Expose original request Context for convenience.
 	Context *context.Context
 
+	Err     error
+}
+
+func (resp *Response) Json(useStruct interface{}) error{
+	defer resp.Close()
+	if resp.Err != nil {
+		return resp.Err
+	}
+
+	if err := DecodeBody(resp.RawResponse, &useStruct); err != nil {
+		return err
+	}
+	return nil
 }

@@ -60,16 +60,16 @@ type RspPrometheus struct {
 func (p *Prometheus) Node() {
 	r := p.c.DoNewRequest("GET","/api/v1/query")
 	r.SetParam("Query","query","up{instance='172.17.121.128:9100',job='consul'}")
-	rtt, rsp , err := Guzzle.RequireOK(p.c.NewDoRequest(r))
-	if err != nil {
+	out := Guzzle.RequireOK(p.c.NewDoRequest(r))
 
-	}
-	//out := &RspPrometheus{}
-	//if err := Guzzle.DecodeBody(rsp, &out); err != nil {
-	//	return rtt, nil, err
+	//rtt, rsp , err := Guzzle.RequireOK(p.c.NewDoRequest(r))
+
+	f := &RspPrometheus{}
+	//if err := Guzzle.DecodeBody(out.RawResponse, &f); err != nil {
+	//	fmt.Println(err)
 	//}
-
-	fmt.Println(rtt, rsp, err)
+	out.Json(f)
+	fmt.Printf("%+v",f)
 
 }
 
