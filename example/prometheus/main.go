@@ -8,14 +8,14 @@ import (
 
 func main() {
 	profile := &Guzzle.Config{
-		Address: "promethues-vpc.zmops.cc",
+		Address: "you address",
 		Scheme:  "http",
 	}
 
 	client, _ := Guzzle.NewClient(profile)
 	pc := health.Prometheus{client}
 
-	if err := pc.Health("172.17.121.128"); err != true {
+	if err := pc.Health("you ip "); err != true {
 		fmt.Println(err)
 	}
 
