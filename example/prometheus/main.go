@@ -3,73 +3,20 @@ package main
 import (
 	"fmt"
 	"github.com/tonyjia87/tractorFrame/pkg/tools/Guzzle"
+	"github.com/tonyjia87/tractorFrame/pkg/tools/Prometheus/health"
 )
-
-// Health can be used to query the Health endpoints
-
-
-//// Health returns a handle to the health endpoints
-//func (c *Guzzle.Client) Prometheus() *Prometheus {
-//	return &Prometheus{c}
-//}
-
-func (p *Prometheus) UP() {
-	fmt.Println("here")
-}
-
-//func (c *Guzzle.Client) Prometheus() *Prometheus {
-//	return &Prometheus{c}
-//}
-
-
 
 func main() {
 	profile := &Guzzle.Config{
 		Address: "promethues-vpc.zmops.cc",
-		Scheme: "http",
+		Scheme:  "http",
 	}
 
 	client, _ := Guzzle.NewClient(profile)
+	pc := health.Prometheus{client}
 
-	pc := &Prometheus{client}
-	pc.Node()
-
-
-
-}
-
-type Prometheus struct {
-	c  *Guzzle.Client
-}
-
-type RspPrometheus struct {
-	Status string `json:"status"`
-	Data   struct {
-		ResultType string `json:"resultType"`
-		Result     []struct {
-			Metric struct {
-				Name     string `json:"__name__"`
-				Instance string `json:"instance"`
-				Job      string `json:"job"`
-			} `json:"metric"`
-			Value []interface{} `json:"value"`
-		} `json:"result"`
-	} `json:"data"`
-}
-
-func (p *Prometheus) Node() {
-	r := p.c.DoNewRequest("GET","/api/v1/query")
-	r.SetParam("Query","query","up{instance='172.17.121.128:9100',job='consul'}")
-	out := Guzzle.RequireOK(p.c.NewDoRequest(r))
-
-	//rtt, rsp , err := Guzzle.RequireOK(p.c.NewDoRequest(r))
-
-	f := &RspPrometheus{}
-	//if err := Guzzle.DecodeBody(out.RawResponse, &f); err != nil {
-	//	fmt.Println(err)
-	//}
-	out.Json(f)
-	fmt.Printf("%+v",f)
+	if err := pc.Health("172.17.121.128"); err != true {
+		fmt.Println(err)
+	}
 
 }
-
