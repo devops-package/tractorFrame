@@ -33,9 +33,12 @@ func (p *Prometheus) Health(node string) bool {
 	if err := out.Json(f); err != nil {
 		return false
 	}
-	value := f.Data.Result[0].Value[1]
-	if value == "1" {
-		return true
+	if len(f.Data.Result) >0 {
+		value := f.Data.Result[0].Value[1]
+		if value == "1" {
+			return true
+		}
 	}
+
 	return false
 }
