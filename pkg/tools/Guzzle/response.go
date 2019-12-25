@@ -40,3 +40,15 @@ func (resp *Response) Json(useStruct interface{}) error{
 	}
 	return nil
 }
+
+func (resp *Response) Xml(useStruct interface{}) error{
+	defer resp.Close()
+	if resp.Err != nil {
+		return resp.Err
+	}
+
+	if err := XmlDecodeBody(resp.RawResponse, &useStruct); err != nil {
+		return err
+	}
+	return nil
+}

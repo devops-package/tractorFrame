@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
 	"github.com/hashicorp/go-rootcerts"
 	"io"
@@ -78,5 +79,10 @@ func SetupTLSConfig(tlsConfig *TLSConfig) (*tls.Config, error) {
 // decodeBody is used to JSON decode a body
 func DecodeBody(resp *http.Response, out interface{}) error {
 	dec := json.NewDecoder(resp.Body)
+	return dec.Decode(out)
+}
+
+func XmlDecodeBody(resp *http.Response, out interface{}) error {
+	dec := xml.NewDecoder(resp.Body)
 	return dec.Decode(out)
 }
