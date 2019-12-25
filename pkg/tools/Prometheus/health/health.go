@@ -24,8 +24,10 @@ type RspPrometheus struct {
 	} `json:"data"`
 }
 
-func (p *Prometheus) Health(node string, port int) bool {
-	n := fmt.Sprintf("up{instance='%s:%s',job='consul'}", node, port)
+func (p *Prometheus) Health(node string) bool {
+	//
+	n := fmt.Sprintf("up{instance='%s:9100',job='consul'}", node)
+	//n := fmt.Sprintf("up{instance='%s:%s',job='consul'}", node, port)
 	r := p.DoNewRequest("GET", "/api/v1/query")
 	r.SetParam("Query", "query", n)
 	out := Guzzle.RequireOK(p.NewDoRequest(r))

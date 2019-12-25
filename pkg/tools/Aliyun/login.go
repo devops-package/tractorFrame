@@ -52,13 +52,17 @@ type Login interface {
 
 func (E *EcsClient) SetParam(key, value string) {
 	request := E.Request
-	reflect.ValueOf(&request).Elem().FieldByName(key).SetString(value)
+	x :=reflect.ValueOf(&request).Elem().FieldByName("InstanceNetworkType")
+	//reflect.ValueOf(&request).FieldByName(key).SetString(value)
+	fmt.Printf("%+v\n",x)
+	fmt.Printf("%+v",key)
+	fmt.Printf("%+v",value)
 }
 
-func (E *EcsClient) Instances() {
-	response, err := E.Connect.DescribeInstances(E.Request)
-	if err != nil {
-		fmt.Print(err.Error())
-	}
-	fmt.Printf("response is %#v\n", response)
-}
+//func (E *EcsClient) Instances() {
+//	response, err := E.Connect.DescribeInstances(E.Request)
+//	if err != nil {
+//		fmt.Print(err.Error())
+//	}
+//	fmt.Printf("response is %#v\n", response)
+//}
