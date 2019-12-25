@@ -3,16 +3,25 @@ package aliyun
 import (
 	"fmt"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/ecs"
+	"reflect"
 )
 
 var err error
 
-type LoginClientStruct struct {
+type DnsClient struct {
 	IsInsecure bool
 	Connect    *alidns.Client
+
 }
 
-func (login *LoginClientStruct) NewLogin(regionId, accessKeyId, accessKeySecret string) *LoginClientStruct {
+type EcsClient struct {
+	IsInsecure bool
+	Connect	   *ecs.Client
+	Request    *ecs.DescribeInstancesRequest
+}
+
+func (login *DnsClient ) NewLogin(regionId, accessKeyId, accessKeySecret string) *DnsClient {
 	if login.IsInsecure == false {
 		login.Connect, err = alidns.NewClientWithAccessKey(regionId, accessKeyId, accessKeySecret)
 		if err != nil {
@@ -22,4 +31,34 @@ func (login *LoginClientStruct) NewLogin(regionId, accessKeyId, accessKeySecret 
 	}
 
 	return login
+}
+
+func (login *EcsClient) NewLogin(regionId, accessKeyId, accessKeySecret string) *EcsClient {
+	if login.IsInsecure == false {
+		login.Connect, err = ecs.NewClientWithAccessKey(regionId, accessKeyId, accessKeySecret)
+		if err != nil {
+			fmt.Print(err.Error())
+		}
+		login.IsInsecure = true
+		login.Request = ecs.CreateDescribeInstancesRequest()
+	}
+
+	return login
+}
+
+type Login interface {
+	NewLogin(regionId, accessKeyId, accessKeySecret string) *DnsClient
+}
+
+func (E *EcsClient) SetParam(key, value string) {
+	request := E.Request
+	reflect.ValueOf(&request).Elem().FieldByName(key).SetString(value)
+}
+
+func (E *EcsClient) Instances() {
+	response, err := E.Connect.DescribeInstances(E.Request)
+	if err != nil {
+		fmt.Print(err.Error())
+	}
+	fmt.Printf("response is %#v\n", response)
 }
