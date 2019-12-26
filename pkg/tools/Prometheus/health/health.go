@@ -2,6 +2,7 @@ package health
 
 import (
 	"fmt"
+
 	"github.com/tonyjia87/tractorFrame/pkg/tools/Guzzle"
 )
 
@@ -24,10 +25,10 @@ type RspPrometheus struct {
 	} `json:"data"`
 }
 
-func (p *Prometheus) Health(node string) bool {
+func (p *Prometheus) Health(node string, port int) bool {
 	//
-	n := fmt.Sprintf("up{instance='%s:9100',job='consul'}", node)
-	//n := fmt.Sprintf("up{instance='%s:%s',job='consul'}", node, port)
+	// n := fmt.Sprintf("up{instance='%s:9100',job='consul'}", node)
+	n := fmt.Sprintf("up{instance='%s:%d',job='consul'}", node, port)
 	r := p.DoNewRequest("GET", "/api/v1/query")
 	r.SetParam("Query", "query", n)
 	out := Guzzle.RequireOK(p.NewDoRequest(r))
@@ -35,7 +36,7 @@ func (p *Prometheus) Health(node string) bool {
 	if err := out.Json(f); err != nil {
 		return false
 	}
-	if len(f.Data.Result) >0 {
+	if len(f.Data.Result) > 0 {
 		value := f.Data.Result[0].Value[1]
 		if value == "1" {
 			return true
