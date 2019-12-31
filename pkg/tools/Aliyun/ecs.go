@@ -13,6 +13,11 @@ type EcsGatherData struct {
 	Data []ecs.Instance `json:"Instance" xml:"Instance"`
 }
 
+// WhereKV 批次条件 目前没有实现
+type WhereKV struct {
+	mArgs map[string]string
+}
+
 func (E *EcsClient) defaultParam() {
 	request := E.Request
 	request.PageSize = "100"
@@ -31,10 +36,21 @@ func (E *EcsClient) SetParam(key string, value interface{}) {
 	}
 }
 
-// whereInstances 从第n页开始拉数据
+// Reset 清理client
+func (E *EcsClient) Reset() {
+	E.IsInsecure = false
+	E.PageNumber = 1
+}
+
+// BatchSetParam 批次的方法
+func (E *EcsClient) BatchSetParam(args *WhereKV) {
+}
+
+// whereInstances 通过填写条件开始拉数据
 func (E *EcsClient) whereInstances(number int, ecs *EcsGatherData) (*EcsGatherData, error) {
 	// E.SetPage("PageNumber", number)
 	E.SetParam("PageNumber", number)
+
 	current, err := E.Connect.DescribeInstances(E.Request)
 	if err != nil {
 		fmt.Print(err.Error())
