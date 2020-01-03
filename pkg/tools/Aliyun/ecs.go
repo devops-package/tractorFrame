@@ -3,6 +3,7 @@ package aliyun
 import (
 	"fmt"
 	"math"
+	"regexp"
 
 	"github.com/aliyun/alibaba-cloud-sdk-go/sdk/requests"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ecs"
@@ -73,8 +74,6 @@ func (E *EcsClient) whereInstances(number int, ecs *EcsGatherData) (*EcsGatherDa
 		}
 	}
 	return ecs, nil
-	// E.Response = response
-
 }
 
 // Instances 所有ecs
@@ -85,4 +84,37 @@ func (E *EcsClient) Instances() (*EcsGatherData, error) {
 		return nil, err
 	}
 	return instances, nil
+}
+
+func (E *EcsClient) MatchByName(i *EcsGatherData, r string) *EcsGatherData {
+	Matched := &EcsGatherData{}
+	for _, d := range i.Data {
+		matched, _ := regexp.MatchString(r, d.InstanceName)
+		if matched {
+			Matched.Data = append(Matched.Data, d)
+		}
+	}
+	return Matched
+}
+
+func (E *EcsGatherData) MatchOsType(r string) *EcsGatherData {
+	Matched := &EcsGatherData{}
+	for _, d := range E.Data {
+		matched, _ := regexp.MatchString(r, d.OSType)
+		if matched {
+			Matched.Data = append(Matched.Data, d)
+		}
+	}
+	return Matched
+}
+
+func (E *EcsGatherData) MatchStatus(r string) *EcsGatherData {
+	Matched := &EcsGatherData{}
+	for _, d := range E.Data {
+		matched, _ := regexp.MatchString(r, d.Status)
+		if matched {
+			Matched.Data = append(Matched.Data, d)
+		}
+	}
+	return Matched
 }

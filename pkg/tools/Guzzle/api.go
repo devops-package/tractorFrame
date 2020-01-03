@@ -4,14 +4,14 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"github.com/hashicorp/go-cleanhttp"
 	"io"
-	"io/ioutil"
 	"net"
 	"net/http"
 	"net/url"
 	"strings"
 	"time"
+
+	"github.com/hashicorp/go-cleanhttp"
 )
 
 const (
@@ -87,18 +87,6 @@ type Config struct {
 	// WaitTime limits how long a Watch will block. If not provided,
 	// the agent default values will be used.
 	WaitTime time.Duration
-
-	// Token is used to provide a per-request ACL token
-	// which overrides the agent's default token.
-	Token string
-
-	// TokenFile is a file containing the current token to use for this client.
-	// If provided it is read once at startup and never again.
-	TokenFile string
-
-	// Namespace is the name of the namespace to send along for the request
-	// when no other Namespace ispresent in the QueryOptions
-	Namespace string
 
 	TLSConfig TLSConfig
 }
@@ -226,23 +214,6 @@ func NewClient(config *Config) (*Client, error) {
 		config.Address = parts[1]
 	}
 
-	// If the TokenFile is set, always use that, even if a Token is configured.
-	// This is because when TokenFile is set it is read into the Token field.
-	// We want any derived clients to have to re-read the token file.
-	if config.TokenFile != "" {
-		data, err := ioutil.ReadFile(config.TokenFile)
-		if err != nil {
-			return nil, fmt.Errorf("Error loading token file: %s", err)
-		}
-
-		if token := strings.TrimSpace(string(data)); token != "" {
-			config.Token = token
-		}
-	}
-	if config.Token == "" {
-		config.Token = defConfig.Token
-	}
-
 	return &Client{config: *config}, nil
 }
 
@@ -308,21 +279,14 @@ func (c *Client) DoNewRequest(method, path string) *request {
 		params: make(map[string][]string),
 		header: make(http.Header),
 	}
-	if c.config.Namespace != "" {
-		r.params.Set("ns", c.config.Namespace)
-	}
 	if c.config.WaitTime != 0 {
 		r.params.Set("wait", durToMsec(r.config.WaitTime))
-	}
-	if c.config.Token != "" {
-		r.header.Set("X-Consul-Token", r.config.Token)
 	}
 	return r
 }
 
 // requireOK is used to wrap doRequest and check for a 200
 func RequireOK(d time.Duration, resp *http.Response, e error) *Response {
-
 	return buildResponse(d, resp, e)
 }
 
@@ -343,8 +307,6 @@ func (resp *Response) Close() {
 func buildResponse(d time.Duration, resp *http.Response, e error) *Response {
 
 	defaultResp := &Response{}
-
-
 	defaultResp.StatusCode = resp.StatusCode
 	defaultResp.RawResponse = resp
 	defaultResp.Header = resp.Header

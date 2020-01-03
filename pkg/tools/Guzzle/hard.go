@@ -1,13 +1,13 @@
 package Guzzle
 
 import (
+	"bytes"
 	"log"
 	"net/http"
 	"os"
 	"strconv"
 	"strings"
 )
-
 
 // DefaultConfig returns a default configuration for the client. By default this
 // will pool and reuse idle connections to Guzzle. If you have a long-lived
@@ -30,14 +30,6 @@ func defaultConfig(transportFn func() *http.Transport) *Config {
 
 	if addr := os.Getenv(HTTPAddrEnvName); addr != "" {
 		config.Address = addr
-	}
-
-	if tokenFile := os.Getenv(HTTPTokenFileEnvName); tokenFile != "" {
-		config.TokenFile = tokenFile
-	}
-
-	if token := os.Getenv(HTTPTokenEnvName); token != "" {
-		config.Token = token
 	}
 
 	if auth := os.Getenv(HTTPAuthEnvName); auth != "" {
@@ -136,3 +128,6 @@ func (r *request) SetParam(position, name, value string) {
 	}
 }
 
+func (r *request) SetBody(body *bytes.Buffer) {
+	r.body = r.body
+}
