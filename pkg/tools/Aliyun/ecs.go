@@ -34,6 +34,8 @@ func (E *EcsClient) SetParam(key string, value interface{}) {
 	case "PageNumber":
 		val := value.(int)
 		request.PageNumber = requests.NewInteger(val)
+	case "RegionId":
+		request.RegionId = value.(string)
 	}
 }
 
