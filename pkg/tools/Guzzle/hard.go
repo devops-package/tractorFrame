@@ -129,5 +129,5 @@ func (r *request) SetParam(position, name, value string) {
 }
 
 func (r *request) SetBody(body *bytes.Buffer) {
-	r.body = r.body
+	r.body = body
 }

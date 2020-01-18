@@ -42,3 +42,5 @@ func (c *Consul) State(state string, result *StateStruct) *StateStruct {
 	result = out
 	return result
 }
+
+// func (c *Consul) deregister()
