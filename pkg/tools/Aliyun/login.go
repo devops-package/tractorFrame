@@ -2,6 +2,7 @@ package aliyun
 
 import (
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/alidns"
+	"github.com/aliyun/alibaba-cloud-sdk-go/services/cms"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/ecs"
 	"github.com/aliyun/alibaba-cloud-sdk-go/services/slb"
 )
@@ -9,7 +10,8 @@ import (
 var err error
 
 type SLBClient struct {
-	Client *slb.Client
+	Client        *slb.Client
+	MonitorClient *cms.Client
 }
 
 type DnsClient struct {
@@ -32,6 +34,10 @@ type EcsClient struct {
 
 func (login *SLBClient) NewLogin(regionId, accessKeyId, accessKeySecret string) *SLBClient {
 	login.Client, err = slb.NewClientWithAccessKey(regionId, accessKeyId, accessKeySecret)
+	if err != nil {
+		panic(err)
+	}
+	login.MonitorClient, err = cms.NewClientWithAccessKey(regionId, accessKeyId, accessKeySecret)
 	if err != nil {
 		panic(err)
 	}

@@ -13,6 +13,8 @@ type DefaultSet struct {
 }
 
 type CreateDescribeLoadBalancersResponse slb.DescribeLoadBalancersResponse
+type CreateDescribeHealthStatusResponse slb.DescribeHealthStatusResponse
+type CreateDescribeLoadBalancerAttributeResponse slb.DescribeLoadBalancerAttributeResponse
 
 func SLB_Init(client *aliyun.SLBClient) *DefaultSet {
 	setting := new(DefaultSet)
@@ -20,9 +22,4 @@ func SLB_Init(client *aliyun.SLBClient) *DefaultSet {
 	setting.Scheme = "https"
 	setting.RequestPageSize = "100"
 	return setting
-}
-
-func (d *DefaultSet) SetParam(request *slb.DescribeLoadBalancersRequest) {
-	request.Scheme = d.Scheme
-	request.PageSize = d.RequestPageSize
 }
