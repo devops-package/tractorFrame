@@ -16,7 +16,7 @@ import (
 
 
 func main()  {
-	CMDBAddress := "<your address>"
+	CMDBAddress := "cmdb02.zmops.cc"
 	CDProfile := &Guzzle.Config{
 		Address: CMDBAddress,
 		Scheme:  "http",
@@ -27,7 +27,7 @@ func main()  {
 	}
 	CDClient := CD.CDGuzzle{CDHandler}
 
-	o, _ := CDClient.ServerSearch("172.19.19.79", true)
+	o, _ := CDClient.ServerSearch("172.19.19.791", true)
 	fmt.Println(o)
 }
 ```
