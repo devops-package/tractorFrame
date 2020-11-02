@@ -121,7 +121,7 @@ func (E *EcsGatherData) MatchStatus(r string) *EcsGatherData {
 	return Matched
 }
 
-func (E *EcsClient) ExcludeByName(i *EcsGatherData, r string) *EcsGatherData {
+func (E *EcsGatherData) ExcludeByName(i *EcsGatherData, r string) *EcsGatherData {
 	Matched := &EcsGatherData{}
 	for _, d := range i.Data {
 		matched, _ := regexp.MatchString(r, d.InstanceName)
