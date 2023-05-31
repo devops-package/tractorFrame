@@ -11,8 +11,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/tonyjia87/tractorFrame/pkg/tools/Guzzle"
-	"github.com/tonyjia87/tractorFrame/pkg/tools/Prometheus/health"
+	"github.com/devops-package/tractorFrame/pkg/tools/Guzzle"
+	"github.com/devops-package/tractorFrame/pkg/tools/Prometheus/health"
 )
 
 func main() {

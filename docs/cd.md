@@ -8,8 +8,8 @@ package main
 
 import (
 	"fmt"
-	"github.com/tonyjia87/tractorFrame/pkg/tools/CD"
-	"github.com/tonyjia87/tractorFrame/pkg/tools/Guzzle"
+	"github.com/devops-package/tractorFrame/pkg/tools/CD"
+	"github.com/devops-package/tractorFrame/pkg/tools/Guzzle"
 	"log"
 )
 

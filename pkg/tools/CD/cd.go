@@ -1,7 +1,7 @@
 /**/
 package CD
 
-import "github.com/tonyjia87/tractorFrame/pkg/tools/Guzzle"
+import "github.com/devops-package/tractorFrame/pkg/tools/Guzzle"
 
 type CDGuzzle struct {
 	*Guzzle.Client

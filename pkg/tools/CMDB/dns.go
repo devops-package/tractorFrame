@@ -3,7 +3,7 @@ package CMDB
 import (
 	"bytes"
 	"fmt"
-	"github.com/tonyjia87/tractorFrame/pkg/tools/Guzzle"
+	"github.com/devops-package/tractorFrame/pkg/tools/Guzzle"
 	"time"
 )
 

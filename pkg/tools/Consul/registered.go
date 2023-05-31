@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/tonyjia87/tractorFrame/pkg/tools/Guzzle"
+	"github.com/devops-package/tractorFrame/pkg/tools/Guzzle"
 )
 
 type Consul struct {
@@ -48,7 +48,6 @@ func (c *Consul) GenBody(exporter, node string, port int, tags []string, interva
 	return bytes.NewBuffer(json)
 }
 
-//
 func (c *Consul) Register(exporter, node string, port int) (string, bool) {
 	r := c.DoNewRequest("PUT", "/v1/agent/service/register")
 	tag := make([]string, 1)

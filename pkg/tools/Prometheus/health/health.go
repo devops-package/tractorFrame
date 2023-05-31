@@ -3,7 +3,7 @@ package health
 import (
 	"fmt"
 
-	"github.com/tonyjia87/tractorFrame/pkg/tools/Guzzle"
+	"github.com/devops-package/tractorFrame/pkg/tools/Guzzle"
 )
 
 type Prometheus struct {
